@@ -1,6 +1,7 @@
-import {useGameContext} from "@/context/GameStateContext";
+
 import {useEffect, useRef} from "react";
 import {GameState} from "@/models/Game";
+import {useGameContext} from "@/context/GameContext";
 
 export const useGameLoop = () => {
     const { state, dispatch } = useGameContext();
