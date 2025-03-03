@@ -1,0 +1,233 @@
+.container {
+    width: 100%;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+.gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111;
+    overflow: hidden;
+}
+
+.startScreen,
+.gameOver {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 100;
+    color: white;
+    text-align: center;
+}
+
+.startScreen h1,
+.gameOver h2 {
+    font-size: 48px;
+    margin-bottom: 0;
+    color: #ffc107;
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+}
+
+.startScreen p {
+    max-width: 500px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+}
+
+.button:hover {
+    background-color: #45a049;
+}
+
+/* styles/GameUI.module.css */
+.gameUI {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.stats {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+}
+
+.healthBar {
+    height: 20px;
+    width: 200px;
+    background-color: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.healthFill {
+    height: 100%;
+    width: 100%;
+    background-color: #4caf50;
+    transition: width 0.2s;
+}
+
+.expBar {
+    height: 10px;
+    width: 200px;
+    background-color: #333;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.expFill {
+    height: 100%;
+    width: 0%;
+    background-color: #9c27b0;
+    transition: width 0.2s;
+}
+
+.waveInfo {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    text-align: right;
+    color: white;
+}
+
+.weaponsDisplay {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    gap: 10px;
+}
+
+.weaponSlot {
+    width: 40px;
+    height: 40px;
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+}
+
+.weaponSlot.active {
+    border-color: #ffc107;
+    box-shadow: 0 0 5px #ffc107;
+}
+
+.goldDisplay {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 8px;
+    border-radius: 5px;
+    color: #ffc107;
+}
+
+.passiveItems {
+    position: absolute;
+    right: 10px;
+    bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.passiveItem {
+    width: 30px;
+    height: 30px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+}
+
+.levelUpNotification {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(156, 39, 176, 0.8);
+    border: 2px solid #ba68c8;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    animation: fadeInOut 2s forwards;
+    pointer-events: none;
+    color: white;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.waveNotification {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 28px;
+    color: #ffc107;
+    text-shadow: 0 0 10px #000;
+    animation: fadeInOut 3s forwards;
+    pointer-events: none;
+}
+
+.killText {
+    position: absolute;
+    color: white;
+    font-weight: bold;
+    animation: floatUp 1s forwards;
+    pointer-events: none;
+}
+
+@keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-30px); }
+}

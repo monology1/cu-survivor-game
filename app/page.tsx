@@ -1,101 +1,106 @@
-import Image from "next/image";
+"use client"
+import {useEffect} from 'react';
+import dynamic from 'next/dynamic';
+import Head from 'next/head';
+import {GameStateProvider, useGameState} from '@/context/GameStateContext';
+import styles from '@/styles/Home.module.css';
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+// Use dynamic import with no SSR to avoid canvas issues
+const GameCanvas = dynamic(() => import('@/components/GameCanvas'), {ssr: false});
+const GameUI = dynamic(() => import('@/components/GameUI'), {ssr: false});
+const UpgradeMenu = dynamic(() => import('@/components/UpgradeMenu'), {ssr: false});
+const ShopMenu = dynamic(() => import('@/components/ShopMenu'), {ssr: false});
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+const Game: React.FC = () => {
+    const {gameState, dispatch} = useGameState();
+
+    // Handle keyboard input
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            dispatch({type: 'KEY_DOWN', payload: {key: e.key.toLowerCase()}});
+        };
+
+        const handleKeyUp = (e: KeyboardEvent) => {
+            dispatch({type: 'KEY_UP', payload: {key: e.key.toLowerCase()}});
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, [dispatch]);
+
+    return (
+        <div className={styles.gameContainer}>
+            <GameCanvas/>
+            <GameUI/>
+
+            {gameState.currentState === 'UPGRADING' && <UpgradeMenu/>}
+            {gameState.currentState === 'SHOPPING' && <ShopMenu/>}
+
+            {gameState.currentState === 'MENU' && (
+                <div className={styles.startScreen}>
+                    <h1>Potato Vampire Survivors</h1>
+                    <p>Survive waves of enemies, collect gold, and upgrade your potato hero!</p>
+                    <p>Use WASD or arrow keys to move. Your weapons attack automatically.</p>
+                    <button
+                        onClick={() => {
+                            // Get window dimensions for player starting position
+                            if (typeof window !== 'undefined') {
+                                const width = Math.min(window.innerWidth, 1200);
+                                const height = Math.min(window.innerHeight, 800);
+                                dispatch({type: 'START_GAME', payload: {width, height}});
+                            }
+                        }}
+                        className={styles.button}
+                    >
+                        Start Game
+                    </button>
+                </div>
+            )}
+
+            {gameState.currentState === 'GAME_OVER' && (
+                <div className={styles.gameOver}>
+                    <h2>GAME OVER</h2>
+                    <p>You survived {gameState.wave.current} waves</p>
+                    <p>Level reached: {gameState.player.level}</p>
+                    <p>Kills: {gameState.player.kills}</p>
+                    <p>Gold collected: {gameState.player.gold}</p>
+                    <button
+                        onClick={() => {
+                            if (typeof window !== 'undefined') {
+                                const width = Math.min(window.innerWidth, 1200);
+                                const height = Math.min(window.innerHeight, 800);
+                                dispatch({type: 'START_GAME', payload: {width, height}});
+                            }
+                        }}
+                        className={styles.button}
+                    >
+                        Play Again
+                    </button>
+                </div>
+            )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
-}
+    );
+};
+
+const HomePage: React.FC = () => {
+    return (
+        <div className={styles.container}>
+            <Head>
+                <title>Potato Vampire Survivors</title>
+                <meta name="description" content="Survive waves of enemies in this action roguelike game"/>
+                <link rel="icon" href="/favicon.ico"/>
+            </Head>
+
+            <GameStateProvider>
+                <Game/>
+            </GameStateProvider>
+        </div>
+    );
+};
+
+export default HomePage;
