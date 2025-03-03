@@ -1,7 +1,6 @@
-import { WeaponType, PassiveItemType, EnemyType } from '@/types/game';
+import { Weapon } from '@/models/Weapon';
 
-// Weapon types
-export const weaponTypes: WeaponType[] = [
+export const weaponTypes: Weapon[] = [
     {
         id: 'potato_gun',
         name: 'Potato Gun',
@@ -146,99 +145,5 @@ export const weaponTypes: WeaponType[] = [
             { level: 4, attackSpeed: 1.6, description: '+33% attack speed' },
             { level: 5, attackPattern: 'whip360', description: 'Whip attacks in all directions' }
         ]
-    }
-];
-
-// Passive items
-export const passiveItems: PassiveItemType[] = [
-    {
-        id: 'heart',
-        name: 'Heart',
-        description: '+20 Max HP',
-        icon: '❤️'
-    },
-    {
-        id: 'boots',
-        name: 'Boots',
-        description: '+15% Movement Speed',
-        icon: '👢'
-    },
-    {
-        id: 'glove',
-        name: 'Power Glove',
-        description: '+20% Damage',
-        icon: '🧤'
-    },
-    {
-        id: 'stopwatch',
-        name: 'Stopwatch',
-        description: '+15% Attack Speed',
-        icon: '⏱️'
-    },
-    {
-        id: 'magnet',
-        name: 'Magnet',
-        description: '+30% Pickup Range',
-        icon: '🧲'
-    },
-    {
-        id: 'clover',
-        name: 'Lucky Clover',
-        description: '+10% XP Gain',
-        icon: '🍀'
-    }
-];
-
-// Enemy types
-export const enemyTypes: EnemyType[] = [
-    {
-        name: 'Zombie',
-        health: 30,
-        speed: 2,
-        damage: 10,
-        size: 20,
-        color: '#4CAF50',
-        experienceValue: 1,
-        goldValue: 1
-    },
-    {
-        name: 'Skeleton',
-        health: 20,
-        speed: 3,
-        damage: 5,
-        size: 18,
-        color: '#BDBDBD',
-        experienceValue: 1,
-        goldValue: 1
-    },
-    {
-        name: 'Bat',
-        health: 10,
-        speed: 4,
-        damage: 3,
-        size: 12,
-        color: '#9C27B0',
-        experienceValue: 1,
-        goldValue: 1
-    },
-    {
-        name: 'Ghost',
-        health: 15,
-        speed: 2.5,
-        damage: 7,
-        size: 22,
-        color: 'rgba(200, 200, 255, 0.7)',
-        experienceValue: 1,
-        goldValue: 1
-    },
-    {
-        name: 'Boss',
-        health: 500,
-        speed: 1.5,
-        damage: 20,
-        size: 50,
-        color: '#F44336',
-        experienceValue: 20,
-        goldValue: 50
     }
 ];
