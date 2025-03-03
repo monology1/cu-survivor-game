@@ -110,11 +110,17 @@ function gameReducer(state: IGameState, action: GameAction): IGameState {
             };
 
         case 'START_GAME':
-            return {
+            console.log('START_GAME action received - fixing game state');
+            const newState = {
                 ...state,
                 gameState: GameState.PLAYING,
-                gameRunning: true
+                gameRunning: true // Make sure this is set to true
             };
+            console.log('Game state should now be:', newState.gameState);
+            console.log('Game running should now be:', newState.gameRunning);
+
+            // Return the new state
+            return newState;
 
         case 'RESTART_GAME':
             return {

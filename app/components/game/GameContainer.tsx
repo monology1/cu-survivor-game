@@ -1,5 +1,5 @@
 import React from 'react';
-import { GameProvider } from '@/context/GameContext';
+import {GameProvider} from '@/context/GameContext';
 import GameCanvas from './GameCanvas';
 import StatsDisplay from './ui/StatsDisplay';
 import WaveInfo from './ui/WaveInfo';
@@ -11,26 +11,29 @@ import UpgradeMenu from './ui/UpgradeMenu';
 import GameOverScreen from './ui/GameOverScreen';
 import StartScreen from './ui/StartScreen';
 import Notifications from './ui/Notifications';
+import DebugInfo from "@/components/game/ui/DebugInfo";
 
 const GameContainer: React.FC = () => {
+
     return (
         <GameProvider>
             <div className="relative w-full h-screen bg-black overflow-hidden">
                 {/* Game Canvas */}
-                <GameCanvas />
+                <GameCanvas/>
 
                 {/* UI Elements */}
-                <div className="absolute inset-0 pointer-events-none">
-                    <StatsDisplay />
-                    <WaveInfo />
-                    <WeaponsDisplay />
-                    <PassiveItems />
-                    <GoldDisplay />
-                    <ShopMenu />
-                    <UpgradeMenu />
-                    <GameOverScreen />
-                    <StartScreen />
-                    <Notifications />
+                <div className="absolute inset-0">
+                    <StatsDisplay/>
+                    <WaveInfo/>
+                    <WeaponsDisplay/>
+                    <PassiveItems/>
+                    <GoldDisplay/>
+                    <ShopMenu/>
+                    <UpgradeMenu/>
+                    <GameOverScreen/>
+                    <StartScreen/>
+                    <Notifications/>
+                    <DebugInfo/>
                 </div>
             </div>
         </GameProvider>

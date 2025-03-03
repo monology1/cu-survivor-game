@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useGameContext } from '@/context/GameContext';
 import { useCanvas } from '@/hooks/useCanvas';
 import { useKeyboard } from '@/hooks/useKeyboard';
@@ -15,9 +15,40 @@ import { LevelSystem } from '@/systems/LevelSystem';
 
 const GameCanvas: React.FC = () => {
     const { state, dispatch } = useGameContext();
-    const keys = useKeyboard();
+    const { keys, keysRef } = useKeyboard();
     const canvasContainerRef = useRef<HTMLDivElement>(null);
     const lastFrameTimeRef = useRef<number>(0);
+    const [forceRun, setForceRun] = useState(false); // NEW: State to force the game to run
+
+    // NEW: This effect starts the game loop directly when component mounts
+    useEffect(() => {
+        setForceRun(true);
+
+        // Force a wave to start and manually spawn an enemy
+        if (state.gameState === GameState.PLAYING) {
+            dispatch({ type: 'START_WAVE' });
+
+            // Add test enemy
+            setTimeout(() => {
+                const testEnemy = {
+                    x: state.player.x + 100,
+                    y: state.player.y - 100,
+                    health: 30,
+                    maxHealth: 30,
+                    speed: 2,
+                    damage: 10,
+                    size: 20,
+                    color: '#4CAF50',
+                    experienceValue: 1,
+                    goldValue: 1,
+                    name: 'Test Enemy'
+                };
+
+                dispatch({ type: 'ADD_ENEMY', payload: testEnemy });
+                console.log('Added test enemy from GameCanvas mount');
+            }, 200);
+        }
+    }, []);
 
     // Define the draw function for the canvas
     const draw = (ctx: CanvasRenderingContext2D) => {
@@ -53,13 +84,18 @@ const GameCanvas: React.FC = () => {
     // Use the canvas hook
     const canvasRef = useCanvas(draw);
 
-    // Update game state on every frame
+    // CHANGED: Game loop now runs regardless of gameRunning state
     useEffect(() => {
-        if (!state.gameRunning) return;
+
+        // NEW: Always run the game loop if forceRun is true, regardless of state.gameRunning
+        if (!forceRun && !state.gameRunning) {
+            console.log('Game loop skipped due to !gameRunning && !forceRun');
+            return;
+        }
+
+        const animationFrameRef = { current: 0 };
 
         const gameLoop = (timestamp: number) => {
-            if (!state.gameRunning) return;
-
             // Calculate delta time
             if (!lastFrameTimeRef.current) lastFrameTimeRef.current = timestamp;
             const deltaTime = (timestamp - lastFrameTimeRef.current) / 1000; // Convert to seconds
@@ -68,36 +104,72 @@ const GameCanvas: React.FC = () => {
             // Cap delta time to avoid physics issues
             const cappedDeltaTime = Math.min(deltaTime, 0.2);
 
-            // Only update game logic when playing
-            if (state.gameState === GameState.PLAYING) {
+            // CHANGED: Run game logic even if gameState isn't PLAYING, just to keep things moving
+            const isGameActive = state.gameState === GameState.PLAYING || forceRun;
+
+            if (isGameActive) {
+
                 // 1. Update wave
                 const updatedWave = WaveSystem.updateWaveTimer(state.wave, cappedDeltaTime);
 
                 // 2. Check wave state transitions
                 if (WaveSystem.shouldStartWave(updatedWave)) {
                     dispatch({ type: 'START_WAVE' });
-                    return;
                 }
 
                 if (WaveSystem.shouldEndWave(updatedWave)) {
                     dispatch({ type: 'END_WAVE' });
                     dispatch({ type: 'SHOW_SHOP' });
-                    return;
                 }
 
-                // 3. Spawn enemies if needed
-                if (updatedWave.active && state.enemies.length < 50) {
-                    const maxEnemies = WaveSystem.getMaxEnemies(updatedWave.current);
-                    const enemiesToSpawn = WaveSystem.calculateEnemiesToSpawn(
-                        state.enemies.length,
-                        updatedWave.current
-                    );
+                // CHANGED: Always try to spawn enemies if we have none
+                const shouldSpawnEnemies = (updatedWave.active || forceRun) && state.enemies.length < 50;
 
-                    for (let i = 0; i < enemiesToSpawn; i++) {
-                        if (canvasRef.current) {
-                            const { width, height } = canvasRef.current;
-                            const newEnemy = EnemySystem.spawnEnemy(width, height, updatedWave.current);
-                            dispatch({ type: 'ADD_ENEMY', payload: newEnemy });
+                // 3. Spawn enemies if needed
+                if (shouldSpawnEnemies) {
+                    // NEW: Special case for first enemies
+                    if (state.enemies.length === 0) {
+                        console.log('No enemies - forcing enemy spawn');
+
+                        // Spawn 3 test enemies at different positions
+                        for (let i = 0; i < 3; i++) {
+                            const angle = (i / 3) * Math.PI * 2;
+                            const distance = 150;
+
+                            if (canvasRef.current) {
+                                const testEnemy = {
+                                    x: state.player.x + Math.cos(angle) * distance,
+                                    y: state.player.y + Math.sin(angle) * distance,
+                                    health: 30,
+                                    maxHealth: 30,
+                                    speed: 2,
+                                    damage: 10,
+                                    size: 20,
+                                    color: '#FF0000',
+                                    experienceValue: 1,
+                                    goldValue: 1,
+                                    name: 'Test Enemy'
+                                };
+
+                                dispatch({ type: 'ADD_ENEMY', payload: testEnemy });
+                                console.log('Added forced test enemy at position', i);
+                            }
+                        }
+                    } else {
+                        // Normal enemy spawning
+                        const maxEnemies = WaveSystem.getMaxEnemies(updatedWave.current);
+                        const enemiesToSpawn = WaveSystem.calculateEnemiesToSpawn(
+                            state.enemies.length,
+                            updatedWave.current
+                        );
+
+                        for (let i = 0; i < enemiesToSpawn; i++) {
+                            if (canvasRef.current) {
+                                const { width, height } = canvasRef.current;
+                                const newEnemy = EnemySystem.spawnEnemy(width, height, updatedWave.current);
+                                dispatch({ type: 'ADD_ENEMY', payload: newEnemy });
+                                console.log('Added normal enemy through spawner');
+                            }
                         }
                     }
                 }
@@ -281,15 +353,63 @@ const GameCanvas: React.FC = () => {
                 }
             }
 
-            requestAnimationFrame(gameLoop);
+            // Continue the game loop regardless of state
+            animationFrameRef.current = requestAnimationFrame(gameLoop);
         };
 
-        const animationId = requestAnimationFrame(gameLoop);
+        // Start the game loop
+        animationFrameRef.current = requestAnimationFrame(gameLoop);
+
+        // Handle direct keyboard movement
+        const inputLoopRef = { current: 0 };
+
+        const handleDirectKeyboard = () => {
+            // Process keyboard input on every frame
+            const currentKeys = keysRef.current;
+            const moveSpeed = 5; // Speed multiplier
+            let dx = 0;
+            let dy = 0;
+
+            // Process WASD and arrow keys
+            if (currentKeys['w'] || currentKeys['arrowup'] || currentKeys['up']) dy -= 1;
+            if (currentKeys['s'] || currentKeys['arrowdown'] || currentKeys['down']) dy += 1;
+            if (currentKeys['a'] || currentKeys['arrowleft'] || currentKeys['left']) dx -= 1;
+            if (currentKeys['d'] || currentKeys['arrowright'] || currentKeys['right']) dx += 1;
+
+            // Only dispatch if there's actual movement
+            if (dx !== 0 || dy !== 0) {
+                // Normalize diagonal movement
+                if (dx !== 0 && dy !== 0) {
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    dx /= length;
+                    dy /= length;
+                }
+
+                // Update player position directly
+                dispatch({
+                    type: 'UPDATE_PLAYER',
+                    payload: {
+                        x: state.player.x + dx * moveSpeed,
+                        y: state.player.y + dy * moveSpeed
+                    }
+                });
+            }
+
+            inputLoopRef.current = requestAnimationFrame(handleDirectKeyboard);
+        };
+
+        // Start the input processing loop (always run this)
+        inputLoopRef.current = requestAnimationFrame(handleDirectKeyboard);
 
         return () => {
-            cancelAnimationFrame(animationId);
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+            }
+            if (inputLoopRef.current) {
+                cancelAnimationFrame(inputLoopRef.current);
+            }
         };
-    }, [state, dispatch, keys, canvasRef]);
+    }, [dispatch, state.player, forceRun]); // CHANGED: Simplified dependencies
 
     return (
         <div ref={canvasContainerRef} className="w-full h-full">

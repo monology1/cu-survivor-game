@@ -45,15 +45,60 @@ export class MovementSystem {
     }
 
     /**
-     * Update enemy positions, moving them towards the player
+     * Update enemy positions, moving them towards the player with debug logging
      */
     static updateEnemyPositions(
         enemies: Enemy[],
         player: Player,
         deltaTime: number
     ): Enemy[] {
+        if (enemies.length === 0) {
+            console.log('No enemies to update positions for');
+            return [];
+        }
+
+        console.log(`Updating positions for ${enemies.length} enemies, deltaTime: ${deltaTime}`);
+        console.log('Player position:', { x: player.x, y: player.y });
+
+        // Debug first enemy
+        if (enemies.length > 0) {
+            const firstEnemy = enemies[0];
+            console.log('First enemy before update:', {
+                x: firstEnemy.x,
+                y: firstEnemy.y,
+                speed: firstEnemy.speed
+            });
+
+            // Calculate movement that should happen
+            const dx = player.x - firstEnemy.x;
+            const dy = player.y - firstEnemy.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 5) {
+                const moveX = (dx / dist) * firstEnemy.speed * deltaTime * 60;
+                const moveY = (dy / dist) * firstEnemy.speed * deltaTime * 60;
+
+                console.log('First enemy should move:', {
+                    dx: moveX,
+                    dy: moveY,
+                    calculations: {
+                        dx,
+                        dy,
+                        dist,
+                        speed: firstEnemy.speed,
+                        deltaTime,
+                        speedFactor: firstEnemy.speed * deltaTime * 60
+                    }
+                });
+            }
+        }
+
+        // Update all enemies with MUCH higher movement speed for testing
         return enemies.map(enemy => {
             const updatedEnemy = { ...enemy };
+
+            // CRITICAL FIX: Increase speed by 5x for testing to make movement more visible
+            const speedMultiplier = 5;
 
             // Move enemy towards player
             const dx = player.x - enemy.x;
@@ -61,8 +106,9 @@ export class MovementSystem {
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist > 5) { // Prevent jittering when close
-                updatedEnemy.x += (dx / dist) * enemy.speed * deltaTime * 60;
-                updatedEnemy.y += (dy / dist) * enemy.speed * deltaTime * 60;
+                // Force larger movement for debugging
+                updatedEnemy.x += (dx / dist) * enemy.speed * speedMultiplier * deltaTime * 60;
+                updatedEnemy.y += (dy / dist) * enemy.speed * speedMultiplier * deltaTime * 60;
             }
 
             return updatedEnemy;

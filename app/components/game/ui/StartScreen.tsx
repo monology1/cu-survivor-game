@@ -7,8 +7,29 @@ const StartScreen = () => {
 
     const handleStart = () => {
         console.log('Start button clicked');
-        dispatch({ type: 'START_GAME' });
-        console.log('Game state after dispatch:', state.gameState);
+
+        // First restart the game to ensure clean state
+        dispatch({ type: 'RESTART_GAME' });
+
+        // Then set focus
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.focus();
+            console.log('Set focus on game container');
+        }
+
+        // Double check game state
+        setTimeout(() => {
+            console.log('Checking game state after start:');
+            console.log('- Game state:', state.gameState);
+            console.log('- Game running:', state.gameRunning);
+
+            // If game isn't running, force it
+            if (!state.gameRunning) {
+                console.log('Game not running, forcing start...');
+                dispatch({ type: 'START_GAME' });
+            }
+        }, 100);
     };
 
     if (state.gameState !== 'MENU') {
@@ -22,7 +43,7 @@ const StartScreen = () => {
             <p className="mb-2">Use WASD or arrow keys to move. Your weapons attack automatically.</p>
             <p className="mb-2">Collect experience to level up and choose new weapons or upgrades.</p>
             <p className="mb-2">Survive waves to earn gold and shop for permanent upgrades!</p>
-            <Button onClick={handleStart} className="mt-5">Start Game</Button>
+            <Button onClick={handleStart} className="mt-5 cursor-pointer">Start Game</Button>
         </div>
     );
 };
